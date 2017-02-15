@@ -1,172 +1,79 @@
-cope='''El corría, nunca le enseñaron a andar,
-se fue tras luces pálidas.
-Ella huía de espejismos y horas de más.
-Aeropuertos. Unos vienen, otros se van,
-igual que Alicia sin ciudad.
 
-El valor para marcharse,
-el miedo a llegar.
+from lyrics import songs
 
-Llueve en el canal, la corriente enseña
-el camino hacia el mar.
-Todos duermen ya.
+import unicodedata
+ 
+def remove_accents(input_str):
+     nfkd_form = unicodedata.normalize('NFKD', input_str)
+     only_ascii = nfkd_form.encode('ASCII', 'ignore')
+     return only_ascii
 
-Dejarse llevar suena demasiado bien.
-Jugar al azar,
-nunca saber dónde puedes terminar...
-o empezar.
-
-Un instante mientras los turistas se van.
-Un tren de madrugada
-consiguió trazar
-la frontera entre siempre o jamás.
-
-
-
-Llueve en el canal, la corriente enseña
-el camino hacia el mar.
-Todos duermen ya.
-
-Dejarse llevar suena demasiado bien.
-Jugar al azar,
-nunca saber dónde puedes terminar...
-o empezar.
-
-Ella duerme tras el vendaval.
-No se quitó la ropa.
-Sueña con despertar
-en otro tiempo y en otra ciudad.
-
-Dejarse llevar suena demasiado bien.
-Jugar al azar,
-nunca saber dónde puedes terminar...
-o empezar.'''
-####################################
-valiente='''
-Tras de mí una escena y diez mil frases que repetir,
-ya ves, lo que es no es.
-Yo no voy a contar lo mejor, a ocultar lo peor,
-me pongo el mejor chaqué.
-
-No digo lo que digo,
-hago lo que no hago,
-al revés, al revés, porque
-ser valiente no es sólo cuestión de suerte.
-
-A veces no soy yo,
-busco un disfraz mejor,
-bailando hasta el apagón.
-¡Disculpad mi osadía!
-
-Tú también tienes que ver
-que nunca tengo mi papel.
-Nube gris, riega todo el jardín,
-todo el jardín, todas las flores que no probé.
-
-No olvido los sueños,
-vuelvo a lo que no acabó,
-no perdí, no perdí, porque
-ser valiente no es sólo cuestión de verte.
-
-
-
-A veces no soy yo,
-busco un disfraz mejor,
-bailando hasta el apagón.
-¡Disculpad mi osadía!
-
-Pensad que ya no estoy,
-que el eco no es mi voz,
-mejor aplaude y vámonos.
-¡Qué termine esta función!
-
-Tras de mí una escena y diez mil frases que repetir,
-ya ves, lo que es no es.
-
-A veces no soy yo,
-busco un disfraz mejor,
-bailando hasta el apagón.
-¡Disculpad mi osadía!
-
-Pensad que ya no estoy,
-que el eco no es mi voz,
-mejor aplaude y vámonos.
-¡Qué termine esta función!
-
-Deme la voz, deme la voz, deme la voz,
-apuntador, deme la voz, deme la voz,
-apuntador, deme la voz, deme la voz,
-deme la voz, deme la voz, la voz ...
-'''
-##################################
-marea='''
-La marea me dejó arenas de plata,
-que pondré en el reloj del tiempo que no pasa.
-La marea me dejó islas inundadas,
-donde atrapar con mi red una historia de piratas
-
-Tu marea me dejó la piel cuarteada,
-la miel en los labios,
-las piernas enterradas.
-La marea me dejó la piel cuarteada,
-la miel en los labios,
-las piernas enterradas.
-
-La marea me dejó aromas de un barco,
-algas tejidas en forma de desengaño.
-La marea me dejó unas conchas sin nombre,
-con que el niño hace un collar de un alfabeto que no entiende el hombre.
-
-Tu marea me dejó la piel cuarteada,
-la miel en los labios,
-las piernas enterradas.
-La marea me dejó la piel cuarteada,
-la miel en los labios ,
-las piernas enterradas.
-
-La marea me dejó cangrejos helados,
-agujas de hielo y un libro en blanco.
-La marea me dejó los versos borrados.
-la tinta, un borrón, un papel mojado
-
-Tu marea me dejó la piel cuarteada,
-la miel en los labios,
-las piernas enterradas.
-La marea me dejó la piel cuarteada,
-la miel en los labios ,
-las piernas enterradas.
-'''
-###############################################
-
-def initials(cope):
-    cope=cope.lower()
-    cope=cope.replace('.',' ')
-    cope=cope.replace('!','')
-    cope=cope.replace('?','')
-    cope=cope.replace('¡','')
-    cope=cope.replace('¿','')  
-    cope=cope.replace('\n',' ')
-    cope=cope.replace(',',' ')
-    copewords=cope.split(' ')
-    copewords=[word for word in copewords if word!='']
-    print(copewords)
-    user_input=str(input('What word you wanna learn?')).lower()
+def syllable(songwords,syllables):
+    '''syllables is a list of the syllables defined by the user, 'ta-ble'-> ['ta','ble'].'''
+    syllables=syllables.split('-')
+    #first try an initials like approach.
+    window_len=len(syllables)
+    counter=0
+    results=[]
+    while len(songwords)>counter+window_len: #iterate over the words in the song
+        window_words=[]
+        for i in range(window_len):
+            window_words.append(songwords[counter+i])
+            
+        flag=0
+        for j in range(window_len):
+            if not window_words[j].startswith(syllables[j]): #'abc'[::-1].startswith('cba') endswith
+                flag=1
+                
+        if flag==0 and window_words not in results:
+            results.append(window_words)
+        counter+=1
+        
+    return results
+        
+def initials(songwords,user_input):
+    all_results=[]
     counter=0
     memo=[]
     window=len(user_input)
-    while len(copewords)>counter+window:
+    while len(songwords)>counter+window:
         windowstr=''
         result=[]
         for i in range(window):
-            result.append(copewords[counter+i])
-            windowstr+=copewords[counter+i][0] #first letter of all words inside the window
+            result.append(songwords[counter+i])
+            windowstr+=songwords[counter+i][0] #first letter of all words inside the window
 
         if windowstr==user_input:
             print(result,windowstr)
-            return result
+            if result not in all_results:
+                all_results.append(result)
         counter+=1
-    return []
+    return all_results
+
+def main(songs):
+    user_input=str(input('What word you wanna learn?')).lower()
+    syllables=str(input('Split in syllables the word:')).lower()
+    initials_results=[]
+    syllable_results=[]
+    for song in songs:
+        song=song.lower()
+        song=song.replace('.',' ')
+        song=song.replace('!','')
+        song=song.replace('?','')
+        song=song.replace('¡','')
+        song=song.replace('¿','')  
+        song=song.replace('\n',' ')
+        song=song.replace(',',' ')
+        songwords=song.split(' ')
+        songwords=[remove_accents(word).decode("utf-8") for word in songwords if word!='']
+
+        initials_results.append(initials(songwords,user_input))
+        syllable_results.append(syllable(songwords,syllables))
     
-songs=[cope,valiente,marea]
-for song in songs:
-    print(initials(song))      
+    if len(initials_results)==0 and len(syllable_results)==0:
+        return 'No results found. Sorry, we are also dissapointed with ourselves. We payed a lot for our masters. Damm it.'
+        
+    return (initials_results,syllable_results)
+    
+
+print(main(songs))
