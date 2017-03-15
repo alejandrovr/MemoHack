@@ -2,7 +2,8 @@
 from lyrics import songs
 
 import unicodedata
- 
+import re
+
 def remove_accents(input_str):
      nfkd_form = unicodedata.normalize('NFKD', input_str)
      only_ascii = nfkd_form.encode('ASCII', 'ignore')
@@ -50,11 +51,27 @@ def initials(songwords,user_input):
         counter+=1
     return all_results
 
+def regexsearch(songwords, syllables):
+    syllables=syllables.split('-')
+    regez=''
+    for syl in syllables:
+        regez=regez+'('+syl+'.*?)' #? avoids greedy behaviour
+    songwords=' '.join(songwords)
+    matches=re.search(regez, songwords)
+    result=''
+    if matches:
+        for i in range(len(syllables)):
+            result=result+'<br>'+syllables[i]+'</br>'+matches.group(i+1)[len(syllables)-1:]
+    return result
+    
+
+
 def main(songs):
     user_input=str(input('What word you wanna learn?')).lower()
     syllables=str(input('Split in syllables the word:')).lower()
     initials_results=[]
     syllable_results=[]
+    regex_results=[]
     for song in songs:
         song=song.lower()
         song=song.replace('.',' ')
@@ -66,14 +83,25 @@ def main(songs):
         song=song.replace(',',' ')
         songwords=song.split(' ')
         songwords=[remove_accents(word).decode("utf-8") for word in songwords if word!='']
-
-        initials_results.append(initials(songwords,user_input))
-        syllable_results.append(syllable(songwords,syllables))
+        
+        #save result if any.
+        inires=initials(songwords,user_input)
+        if inires:
+            initials_results.append(inires)
+            
+        syres=syllable(songwords,syllables)
+        print('syres is' ,syres)
+        if syres:
+            syllable_results.append(syres)
+            
+        reres=regexsearch(songwords, syllables)            
+        if reres:
+            regex_results.append(reres)
     
-    if len(initials_results)==0 and len(syllable_results)==0:
+    if len(initials_results)==0 and len(syllable_results)==0 and len(regex_results)==0:
         return 'No results found. Sorry, we are also dissapointed with ourselves. We payed a lot for our masters. Damm it.'
         
-    return (initials_results,syllable_results)
+    return (initials_results,syllable_results, regex_results)
     
 
 print(main(songs))
